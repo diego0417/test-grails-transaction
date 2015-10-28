@@ -33,18 +33,19 @@ Clonamos el repo en GitHub y luego ejecutamos los commandos de Grails
 
 Si queremos probar el save nos abrimos 3 terminales y ejecuamos el siguiente curl en cada uno de ellos
 
-  curl -i -X POST -H "Content-Type:application/json" "localhost:8080/opa/testingPoolSize" -d {"trx_id":2222}
+    curl -i -X POST -H "Content-Type:application/json" "localhost:8080/opa/testingPoolSize" -d {"trx_id":2222}
 
 El resultado es el siguiente:
 
   Los dos primeros request que entren van a tener retenida la conexión del Pool y no va a liberarla y el 3er
   request va a tirar una excepción como a continuación
 
-  {
-    "message": "Hibernate operation: could not prepare statement; uncategorized SQLException for SQL [insert into transaction (id, version, date_created, status, trx_id) values (null, ?, ?, ?, ?)]; SQL state [null]; error code [0]; [http-bio-8080-exec-6] Timeout: Pool empty. Unable to fetch a connection in 1 seconds, none available[size:2; busy:2; idle:0; lastwait:1000].; nested exception is org.apache.tomcat.jdbc.pool.PoolExhaustedException: [http-bio-8080-exec-6] Timeout: Pool empty. Unable to fetch a connection in 1 seconds, none available[size:2; busy:2; idle:0; lastwait:1000].",
+    {
 
-    "cause": "[http-bio-8080-exec-6] Timeout: Pool empty. Unable to fetch a connection in 1 seconds, none available[size:2; busy:2; idle:0; lastwait:1000]."
-  }
+      "message": "Hibernate operation: could not prepare statement; uncategorized SQLException for SQL [insert into transaction (id, version, date_created, status, trx_id) values (null, ?, ?, ?, ?)]; SQL state [null]; error code [0]; [http-bio-8080-exec-6] Timeout: Pool empty. Unable to fetch a connection in 1 seconds, none available[size:2; busy:2; idle:0; lastwait:1000].; nested exception is org.apache.tomcat.jdbc.pool.PoolExhaustedException: [http-bio-8080-exec-6] Timeout: Pool empty. Unable to fetch a connection in 1 seconds, none available[size:2; busy:2; idle:0; lastwait:1000].",
+
+      "cause": "[http-bio-8080-exec-6] Timeout: Pool empty. Unable to fetch a connection in 1 seconds, none available[size:2; busy:2; idle:0; lastwait:1000]."
+    }
 
   Esto ocurre por el domain.save(flush:true) NO devuelve la conexión al Datasource.
 
@@ -52,12 +53,12 @@ El resultado es el siguiente:
 
   Cambiando el domain.save(flush:true) port
 
-  DomainClass.withTransaction{
-    domainInstance.save()
-  }
+    DomainClass.withTransaction{
+      domainInstance.save()
+    }
 
   Si ahora en las terminales abiertas ejecutamos el siguiente curl
 
-  curl -i -X POST -H "Content-Type:application/json" "localhost:8080/opa/testingPoolSizeWithTransaction" -d {"trx_id":2222}
+    curl -i -X POST -H "Content-Type:application/json" "localhost:8080/opa/testingPoolSizeWithTransaction" -d {"trx_id":2222}
 
   Los tres request en esta ocación van a terminar correctamente, ya que el withTransaction devuelve la conexión al pool.

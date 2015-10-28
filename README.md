@@ -19,7 +19,7 @@ Para lograr nuestro objetivo modificamos las propiedades del DataSource para el 
             }
     }
 
-  De esta forma tenemos como máximo 2 conexiones a la DB y un tiempo de espera de una conexión de 1 segundo.
+  Entonces vamos a tener como máximo 2 conexiones a la DB y un tiempo de espera por una conexión de 1 segundo.
   
   En el servicio TransactionService tenemos varios métodos de testing pero nos vamos a concentrar en dos testingPoolSize y testingPoolSizeWithTransaction.
   
@@ -59,11 +59,13 @@ Para probar el save(flush:true) abrimos 3 terminales y ejecuamos el siguiente cu
 
 El resultado es el siguiente:
 
-  Los dos primeros request van a crear una Transaction y luego van a retener la conexión del Pool y el resultado va a ser el siguiente:
+  Los dos primeros request van a crear una Transaction, sin liberar conexión ni retornarla al Pool. El resultado es el siguiente:
+  
+  Los dos primeros request va a responder con
   
     {"id":2,"status":"pending","date":"2015-10-28T12:59:29Z"}
   
-  El 3er request va a tirar una excepción como a continuación
+  y el 3er request va a tirar una excepción como a continuación
 
     {
 
@@ -72,11 +74,11 @@ El resultado es el siguiente:
       "cause": "[http-bio-8080-exec-6] Timeout: Pool empty. Unable to fetch a connection in 1 seconds, none available[size:2; busy:2; idle:0; lastwait:1000]."
     }
 
-  porque no obtuvo una conexión desde el Pool de Conexiones. Esto ocurre por el domain.save(flush:true) NO devuelve la conexión al Datasource.
+  Esto ocurre por el domain.save(flush:true) NO devuelve la conexión al Datasource.
 
   ¿Como lo solucionamos?
 
-  Cambiando el trx.save(flush:true) port
+  Cambiando el trx.save(flush:true) por
 
     Transaction.withTransaction {
           trx.save()
@@ -86,4 +88,4 @@ El resultado es el siguiente:
 
     curl -i -X POST -H "Content-Type:application/json" "localhost:8080/opa/testingPoolSizeWithTransaction" -d {"trx_id":2222}
 
-  Los tres request en esta ocación van a terminar correctamente, ya que el withTransaction devuelve la conexión al pool.
+  Los tres request van a terminar correctamente, ya que el withTransaction si devuelve la conexión al pool.

@@ -74,7 +74,7 @@ El resultado es el siguiente:
       "cause": "[http-bio-8080-exec-6] Timeout: Pool empty. Unable to fetch a connection in 1 seconds, none available[size:2; busy:2; idle:0; lastwait:1000]."
     }
 
-  Esto ocurre por el domain.save(flush:true) NO devuelve la conexión al Datasource.
+  Esto ocurre por el domain.save(flush:true) NO devuelve la conexión al Datasource de forma inmediata, recién cuando el request finaliza libera la conexión.
 
   ¿Como lo solucionamos?
 

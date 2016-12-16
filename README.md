@@ -2,7 +2,7 @@
 
 El proposito de este proyecto es comparar la forma en que se guardar un dominio en grails mirando el estado del pool de conexiones a la DB. Comparamos Domain.save(flush:true) vs Domain.withTransaction{domain.save()}
 
-Para lograr nuestro objetivo modificamos las propiedades del DataSource para el ambiente "development" se la siguiente forma:
+Para lograr nuestro objetivo modificamos las propiedades del DataSource para el ambiente "development" de la siguiente forma:
 
     development {
             dataSource {
@@ -20,9 +20,9 @@ Para lograr nuestro objetivo modificamos las propiedades del DataSource para el 
     }
 
   Entonces vamos a tener como máximo 2 conexiones a la DB y un tiempo de espera por una conexión de 1 segundo.
-  
+
   En el servicio TransactionService tenemos varios métodos de testing pero nos vamos a concentrar en dos testingPoolSize y testingPoolSizeWithTransaction.
-  
+
      def testingPoolSize(Transaction trx) {
       trx.dateCreated = new Date()
       if (!trx.save(flush:true)){
@@ -31,7 +31,7 @@ Para lograr nuestro objetivo modificamos las propiedades del DataSource para el 
       Thread.sleep(1000 * 10)
       return trx
     }
-    
+
     def testingPoolSizeWithTransaction(Transaction trx) {
       trx.dateCreated = new Date()
       Transaction.withTransaction {
@@ -40,12 +40,12 @@ Para lograr nuestro objetivo modificamos las propiedades del DataSource para el 
       Thread.sleep(1000 * 10)
       return trx
     }
- 
- En ambos casos luego de hacer el save() ponemos un Thread.sleep() para simular un tiempo de espera y así poder ver como se comparta el Pool de conexiones.
+
+ En ambos casos luego de hacer el save() ponemos un Thread.sleep() para simular un tiempo de espera y así poder ver como se comporta el Pool de conexiones.
 
 Testing
 ---
-Clonamos el repo en GitHub y luego ejecutamos los commandos de Grails
+Clonamos el repo de GitHub y luego ejecutamos los commandos de Grails
 
     git clone git@github.com:fcambarieri/test-grails-transaction.git
     cd test-grails-transaction
@@ -60,11 +60,11 @@ Para probar el save(flush:true) abrimos 3 terminales y ejecuamos el siguiente cu
 El resultado es el siguiente:
 
   Los dos primeros request van a crear una Transaction, sin liberar conexión ni retornarla al Pool. El resultado es el siguiente:
-  
+
   Los dos primeros request va a responder con
-  
+
     {"id":2,"status":"pending","date":"2015-10-28T12:59:29Z"}
-  
+
   y el 3er request va a tirar una excepción como a continuación
 
     {
